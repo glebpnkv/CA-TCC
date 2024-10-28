@@ -4,8 +4,6 @@ import torch.nn.functional as F
 from einops import rearrange, repeat
 
 
-########################################################################################
-
 class Residual(nn.Module):
     def __init__(self, fn):
         super().__init__()
@@ -91,8 +89,15 @@ class Transformer(nn.Module):
         return x
 
 
-class Seq_Transformer(nn.Module):
-    def __init__(self, *, patch_size, dim, depth, heads, mlp_dim, channels=1, dropout=0.1):
+class SeqTransformer(nn.Module):
+    def __init__(self, *,
+                 patch_size,
+                 dim,
+                 depth,
+                 heads,
+                 mlp_dim,
+                 channels=1,
+                 dropout=0.1):
         super().__init__()
         patch_dim = channels * patch_size
         self.patch_to_embedding = nn.Linear(patch_dim, dim)

@@ -38,7 +38,9 @@ def permutation(x, max_segments=5, seg_mode="random"):
                 splits = np.split(orig_steps, split_points)
             else:
                 splits = np.array_split(orig_steps, num_segs[i])
-            warp = np.concatenate(np.random.permutation(splits)).ravel()
+            warp = np.concatenate(
+                [splits[y] for y in np.random.permutation(len(splits))]
+            ).ravel()
             ret[i] = pat[0, warp]
         else:
             ret[i] = pat

@@ -11,8 +11,18 @@ import torch.nn.functional as F
 from models.loss import NTXentLoss, SupConLoss
 
 
-def Trainer(model, temporal_contr_model, model_optimizer, temp_cont_optimizer, train_dl, valid_dl, test_dl, device,
-            logger, config, experiment_log_dir, training_mode):
+def run_model_training(model,
+                       temporal_contr_model,
+                       model_optimizer,
+                       temp_cont_optimizer,
+                       train_dl,
+                       valid_dl,
+                       test_dl,
+                       device,
+                       logger,
+                       config,
+                       experiment_log_dir,
+                       training_mode):
     # Start training
     logger.debug("Training started ....")
 
@@ -147,13 +157,13 @@ def model_evaluate(model, temporal_contr_model, test_dl, device, training_mode):
     if (training_mode == "self_supervised") or (training_mode == "SupCon"):
         total_loss = 0
         total_acc = 0
+
         return total_loss, total_acc, [], []
     else:
         total_loss = torch.tensor(total_loss).mean()  # average loss
         total_acc = torch.tensor(total_acc).mean()  # average acc
+
         return total_loss, total_acc, outs, trgs
-
-
 
 
 def gen_pseudo_labels(model, dataloader, device, experiment_log_dir):

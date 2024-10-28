@@ -103,7 +103,7 @@ def _logger(logger_name, level=logging.DEBUG):
 from shutil import copy
 
 
-def copy_Files(destination, data_type):
+def copy_files(destination, data_type):
     destination_dir = os.path.join(destination, "model_files")
     os.makedirs(destination_dir, exist_ok=True)
     copy("main.py", os.path.join(destination_dir, "main.py"))

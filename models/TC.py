@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .attention import Seq_Transformer
+from .attention import SeqTransformer
 
 
 class TC(nn.Module):
@@ -21,8 +21,8 @@ class TC(nn.Module):
             nn.Linear(configs.final_out_channels // 2, configs.final_out_channels // 4),
         )
 
-        self.seq_transformer = Seq_Transformer(patch_size=self.num_channels, dim=configs.TC.hidden_dim, depth=4,
-                                               heads=4, mlp_dim=64)
+        self.seq_transformer = SeqTransformer(patch_size=self.num_channels, dim=configs.TC.hidden_dim, depth=4,
+                                              heads=4, mlp_dim=64)
 
     def forward(self, z_aug1, z_aug2):
         seq_len = z_aug1.shape[2]

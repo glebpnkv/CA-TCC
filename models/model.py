@@ -1,9 +1,9 @@
 from torch import nn
 
 
-class base_Model(nn.Module):
+class BaseModel(nn.Module):
     def __init__(self, configs):
-        super(base_Model, self).__init__()
+        super(BaseModel, self).__init__()
 
         self.conv_block1 = nn.Sequential(
             nn.Conv1d(configs.input_channels, 32, kernel_size=configs.kernel_size,
