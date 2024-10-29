@@ -36,13 +36,14 @@ def main(args):
     np.random.seed(SEED)
     #####################################################
 
-    experiment_log_dir = os.path.join(logs_save_dir, experiment_description, run_description,
-                                      training_mode + f"_seed_{SEED}")
     root_model_save_dir = str(os.path.join(
         logs_save_dir,
         experiment_description,
         run_description
     ))
+
+    experiment_log_dir = os.path.join(root_model_save_dir, training_mode + f"_seed_{SEED}")
+
     os.makedirs(experiment_log_dir, exist_ok=True)
 
     # loop through domains

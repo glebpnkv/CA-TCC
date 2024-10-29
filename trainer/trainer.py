@@ -31,8 +31,17 @@ def run_model_training(model,
 
     for epoch in range(1, config.num_epoch + 1):
         # Train and validate
-        train_loss, train_acc = model_train(model, temporal_contr_model, model_optimizer, temp_cont_optimizer,
-                                            criterion, train_dl, config, device, training_mode)
+        train_loss, train_acc = model_train(
+            model=model,
+            temporal_contr_model=temporal_contr_model,
+            model_optimizer=model_optimizer,
+            temp_cont_optimizer=temp_cont_optimizer,
+            criterion=criterion,
+            train_loader=train_dl,
+            config=config,
+            device=device,
+            training_mode=training_mode
+        )
         valid_loss, valid_acc, _, _ = model_evaluate(model, temporal_contr_model, valid_dl, device, training_mode)
         if (training_mode != "self_supervised") and (training_mode != "SupCon"):
             scheduler.step(valid_loss)
@@ -48,7 +57,7 @@ def run_model_training(model,
                 'temporal_contr_model_state_dict': temporal_contr_model.state_dict()}
     torch.save(chkpoint, os.path.join(experiment_log_dir, "saved_models", f'ckp_last.pt'))
 
-    if (training_mode != "self_supervised") and (training_mode != "SupCon"):
+    if test_dl and (training_mode != "self_supervised") and (training_mode != "SupCon"):
         # evaluate on the test set
         logger.debug('\nEvaluate on the Test set:')
         test_loss, test_acc, _, _ = model_evaluate(model, temporal_contr_model, test_dl, device, training_mode)
@@ -57,8 +66,15 @@ def run_model_training(model,
     logger.debug("\n################## Training is Done! #########################")
 
 
-def model_train(model, temporal_contr_model, model_optimizer, temp_cont_optimizer, criterion, train_loader, config,
-                device, training_mode):
+def model_train(model,
+                temporal_contr_model,
+                model_optimizer,
+                temp_cont_optimizer,
+                criterion,
+                train_loader,
+                config,
+                device,
+                training_mode):
     total_loss = []
     total_acc = []
     model.train()
