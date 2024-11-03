@@ -21,8 +21,13 @@ class TC(nn.Module):
             nn.Linear(configs.final_out_channels // 2, configs.final_out_channels // 4),
         )
 
-        self.seq_transformer = SeqTransformer(patch_size=self.num_channels, dim=configs.TC.hidden_dim, depth=4,
-                                              heads=4, mlp_dim=64)
+        self.seq_transformer = SeqTransformer(
+            patch_size=self.num_channels,
+            dim=configs.TC.hidden_dim,
+            depth=4,
+            heads=4,
+            mlp_dim=64
+        )
 
     def forward(self, z_aug1, z_aug2):
         seq_len = z_aug1.shape[2]
@@ -31,8 +36,11 @@ class TC(nn.Module):
         z_aug2 = z_aug2.transpose(1, 2)
 
         batch = z_aug1.shape[0]
-        t_samples = torch.randint(seq_len - self.timestep, size=(1,)).long().to(
-            self.device)  # randomly pick time stamps
+
+        # Randomly pick time stamps
+        t_samples = torch.randint(
+            seq_len - self.timestep, size=(1,)
+        ).long().to(self.device)
 
         nce = 0  # average over timestep and batch
         encode_samples = torch.empty((self.timestep, batch, self.num_channels)).float().to(self.device)

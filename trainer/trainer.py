@@ -1,3 +1,4 @@
+import operator as op
 import os
 import sys
 
@@ -22,16 +23,23 @@ def run_model_training(model,
                        logger,
                        config,
                        experiment_log_dir,
-                       training_mode):
+                       training_mode,
+                       checkpoint_metric: str = "valid_acc",
+                       checkpoint_mode: str = "max"):
     # Start training
     logger.debug("Training started ....")
 
     criterion = nn.CrossEntropyLoss()
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(model_optimizer, 'min')
 
+    last_best_metric = np.inf if checkpoint_mode == "min" else -np.inf
+    comparison_op = op.lt if checkpoint_mode == "min" else op.gt
+
+    os.makedirs(os.path.join(experiment_log_dir, "saved_models"), exist_ok=True)
+
     for epoch in range(1, config.num_epoch + 1):
         # Train and validate
-        train_loss, train_acc = model_train(
+        train_log = model_train(
             model=model,
             temporal_contr_model=temporal_contr_model,
             model_optimizer=model_optimizer,
@@ -42,7 +50,13 @@ def run_model_training(model,
             device=device,
             training_mode=training_mode
         )
-        valid_loss, valid_acc, _, _ = model_evaluate(model, temporal_contr_model, valid_dl, device, training_mode)
+        train_loss = train_log["train_loss"]
+        train_acc = train_log["train_acc"]
+
+        valid_log = model_evaluate(model, temporal_contr_model, valid_dl, device, training_mode)
+        valid_loss = valid_log["valid_loss"]
+        valid_acc = valid_log["valid_acc"]
+
         if (training_mode != "self_supervised") and (training_mode != "SupCon"):
             scheduler.step(valid_loss)
 
@@ -50,12 +64,23 @@ def run_model_training(model,
                      f'Train Loss     : {train_loss:2.4f}\t | \tTrain Accuracy     : {train_acc:2.4f}\n'
                      f'Valid Loss     : {valid_loss:2.4f}\t | \tValid Accuracy     : {valid_acc:2.4f}')
 
+        log = train_log | valid_log
+        if checkpoint_metric in log:
+            metric = log[checkpoint_metric]
+            if comparison_op(metric, last_best_metric):
+                last_best_metric = metric
 
-    # save the model after training ...
-    os.makedirs(os.path.join(experiment_log_dir, "saved_models"), exist_ok=True)
-    chkpoint = {'model_state_dict': model.state_dict(),
-                'temporal_contr_model_state_dict': temporal_contr_model.state_dict()}
-    torch.save(chkpoint, os.path.join(experiment_log_dir, "saved_models", f'ckp_last.pt'))
+                chkpoint = {
+                    'model_state_dict': model.state_dict(),
+                    'temporal_contr_model_state_dict': temporal_contr_model.state_dict(),
+                    'epoch': epoch,
+                    'train_loss': train_loss,
+                    'train_acc': train_acc,
+                    'valid_loss': valid_loss,
+                    'valid_acc': valid_acc,
+                }
+                torch.save(chkpoint, os.path.join(experiment_log_dir, "saved_models", "ckp_best.pt"))
+                logger.debug(f"Checkpoint saved at epoch {epoch} with {checkpoint_metric} = {metric}")
 
     if test_dl and (training_mode != "self_supervised") and (training_mode != "SupCon"):
         # evaluate on the test set
@@ -136,8 +161,12 @@ def model_train(model,
         total_acc = 0
     else:
         total_acc = torch.tensor(total_acc).mean()
-    return total_loss, total_acc
 
+    out = {
+        "train_loss": total_loss,
+        "train_acc": total_acc,
+    }
+    return out
 
 def model_evaluate(model, temporal_contr_model, test_dl, device, training_mode):
     model.eval()
@@ -173,13 +202,20 @@ def model_evaluate(model, temporal_contr_model, test_dl, device, training_mode):
     if (training_mode == "self_supervised") or (training_mode == "SupCon"):
         total_loss = 0
         total_acc = 0
+        outs = []
+        trgs = []
 
-        return total_loss, total_acc, [], []
     else:
         total_loss = torch.tensor(total_loss).mean()  # average loss
         total_acc = torch.tensor(total_acc).mean()  # average acc
 
-        return total_loss, total_acc, outs, trgs
+    out = {
+        "valid_loss": total_loss,
+        "valid_acc": total_acc,
+        "valid_preds": outs,
+        "valid_trgs": trgs,
+    }
+    return out
 
 
 def gen_pseudo_labels(model, dataloader, device, experiment_log_dir):

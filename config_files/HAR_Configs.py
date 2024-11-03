@@ -11,12 +11,12 @@ class Config(object):
         self.features_len = 18
 
         # training configs
-        self.num_epoch = 40
+        self.num_epoch = 80
 
         # optimizer parameters
         self.beta1 = 0.9
         self.beta2 = 0.99
-        self.lr = 3e-4
+        self.lr = 2e-4
 
         # data parameters
         self.drop_last = True
@@ -36,7 +36,7 @@ class augmentations(object):
 
 class Context_Cont_configs(object):
     def __init__(self):
-        self.temperature = 0.2
+        self.temperature = 0.15
         self.use_cosine_similarity = True
 
 

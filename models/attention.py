@@ -4,6 +4,26 @@ import torch.nn.functional as F
 from einops import rearrange, repeat
 
 
+class PositionalEncoding(nn.Module):
+    def __init__(self, embedding_dim, max_len=5000):
+        super(PositionalEncoding, self).__init__()
+        # Create a matrix of shape (max_len, embedding_dim) to hold positional encodings
+        position = torch.arange(0, max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, embedding_dim, 2) * (-torch.log(torch.tensor(10000.0)) / embedding_dim))
+
+        pe = torch.zeros(max_len, embedding_dim)
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0)  # Add batch dimension
+
+        # Register as buffer so it’s not considered a model parameter
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        # Add positional encoding to the input tensor x
+        return x + self.pe[:, :x.size(1), :]
+
+
 class Residual(nn.Module):
     def __init__(self, fn):
         super().__init__()
@@ -77,10 +97,14 @@ class Transformer(nn.Module):
         super().__init__()
         self.layers = nn.ModuleList([])
         for _ in range(depth):
-            self.layers.append(nn.ModuleList([
-                Residual(PreNorm(dim, Attention(dim, heads=heads, dropout=dropout))),
-                Residual(PreNorm(dim, FeedForward(dim, mlp_dim, dropout=dropout)))
-            ]))
+            self.layers.append(
+                nn.ModuleList(
+                    [
+                        Residual(PreNorm(dim, Attention(dim, heads=heads, dropout=dropout))),
+                        Residual(PreNorm(dim, FeedForward(dim, mlp_dim, dropout=dropout)))
+                    ]
+                )
+            )
 
     def forward(self, x, mask=None):
         for attn, ff in self.layers:
@@ -101,6 +125,7 @@ class SeqTransformer(nn.Module):
         super().__init__()
         patch_dim = channels * patch_size
         self.patch_to_embedding = nn.Linear(patch_dim, dim)
+        self.pos_encoding = PositionalEncoding(dim)
         self.c_token = nn.Parameter(torch.randn(1, 1, dim))
         self.transformer = Transformer(dim, depth, heads, mlp_dim, dropout)
         self.to_c_token = nn.Identity()
@@ -110,6 +135,8 @@ class SeqTransformer(nn.Module):
         b, n, _ = x.shape
         c_tokens = repeat(self.c_token, '() n d -> b n d', b=b)
         x = torch.cat((c_tokens, x), dim=1)
+        # Adding positional encoding
+        x = self.pos_encoding(x)
         x = self.transformer(x)
         c_t = self.to_c_token(x[:, 0])
         return c_t
