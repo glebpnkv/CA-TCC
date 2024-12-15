@@ -4,7 +4,13 @@ import torch
 
 def DataTransform(sample, config):
     weak_aug = scaling(sample, sigma=config.augmentation.jitter_scale_ratio)
-    strong_aug = jitter(permutation(sample, max_segments=config.augmentation.max_seg), config.augmentation.jitter_ratio)
+    strong_aug = jitter(
+        permutation(
+            sample,
+            max_segments=config.augmentation.max_seg
+        ),
+        config.augmentation.jitter_ratio
+    )
     return weak_aug, strong_aug
 
 
@@ -40,6 +46,7 @@ def permutation(x, max_segments=5, seg_mode="random"):
                 splits = np.array_split(orig_steps, num_segs[i])
             warp = np.concatenate(
                 [splits[y] for y in np.random.permutation(len(splits))]
+                # [np.random.permutation(y) for y in splits]
             ).ravel()
             ret[i] = pat[0, warp]
         else:

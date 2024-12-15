@@ -11,7 +11,7 @@ class Config(object):
         self.features_len = 18
 
         # training configs
-        self.num_epoch = 80
+        self.num_epoch = 40
 
         # optimizer parameters
         self.beta1 = 0.9
