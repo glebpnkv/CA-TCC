@@ -14,19 +14,19 @@ class TC(nn.Module):
         self.lsoftmax = nn.LogSoftmax()
         self.device = device
 
-        self.projection_head = nn.Sequential(
-            nn.Linear(configs.TC.hidden_dim, configs.final_out_channels // 2),
-            nn.BatchNorm1d(configs.final_out_channels // 2),
-            nn.ReLU(inplace=True),
-            nn.Linear(configs.final_out_channels // 2, configs.final_out_channels // 4),
-        )
-
         self.seq_transformer = SeqTransformer(
             patch_size=self.num_channels,
             dim=configs.TC.hidden_dim,
             depth=4,
             heads=4,
             mlp_dim=64
+        )
+
+        self.projection_head = nn.Sequential(
+            nn.Linear(configs.TC.hidden_dim, configs.final_out_channels // 2),
+            nn.BatchNorm1d(configs.final_out_channels // 2),
+            nn.ReLU(inplace=True),
+            nn.Linear(configs.final_out_channels // 2, configs.final_out_channels // 4),
         )
 
     def forward(self, z_aug1, z_aug2):

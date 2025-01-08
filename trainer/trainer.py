@@ -3,8 +3,8 @@ import os
 import sys
 
 sys.path.append("..")
-import numpy as np
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -12,20 +12,22 @@ import torch.nn.functional as F
 from models.loss import NTXentLoss, SupConLoss
 
 
-def run_model_training(model,
-                       temporal_contr_model,
-                       model_optimizer,
-                       temp_cont_optimizer,
-                       train_dl,
-                       valid_dl,
-                       test_dl,
-                       device,
-                       logger,
-                       config,
-                       experiment_log_dir,
-                       training_mode,
-                       checkpoint_metric: str = "valid_acc",
-                       checkpoint_mode: str = "max"):
+def run_model_training(
+    model,
+    temporal_contr_model,
+    model_optimizer,
+    temp_cont_optimizer,
+    train_dl,
+    valid_dl,
+    test_dl,
+    device,
+    logger,
+    config,
+    experiment_log_dir,
+    training_mode,
+    checkpoint_metric: str = "valid_acc",
+    checkpoint_mode: str = "max"
+):
     # Start training
     logger.debug("Training started ....")
 
@@ -91,15 +93,17 @@ def run_model_training(model,
     logger.debug("\n################## Training is Done! #########################")
 
 
-def model_train(model,
-                temporal_contr_model,
-                model_optimizer,
-                temp_cont_optimizer,
-                criterion,
-                train_loader,
-                config,
-                device,
-                training_mode):
+def model_train(
+    model,
+    temporal_contr_model,
+    model_optimizer,
+    temp_cont_optimizer,
+    criterion,
+    train_loader,
+    config,
+    device,
+    training_mode
+):
     total_loss = []
     total_acc = []
     model.train()
@@ -168,7 +172,13 @@ def model_train(model,
     }
     return out
 
-def model_evaluate(model, temporal_contr_model, test_dl, device, training_mode):
+def model_evaluate(
+    model,
+    temporal_contr_model,
+    test_dl,
+    device,
+    training_mode
+):
     model.eval()
     temporal_contr_model.eval()
 
@@ -218,7 +228,12 @@ def model_evaluate(model, temporal_contr_model, test_dl, device, training_mode):
     return out
 
 
-def gen_pseudo_labels(model, dataloader, device, experiment_log_dir):
+def gen_pseudo_labels(
+    model,
+    dataloader,
+    device,
+    experiment_log_dir
+):
     from sklearn.metrics import accuracy_score
     model.eval()
     softmax = nn.Softmax(dim=1)
