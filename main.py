@@ -46,10 +46,6 @@ def main(args):
 
     os.makedirs(experiment_log_dir, exist_ok=True)
 
-    # loop through domains
-    counter = 0
-    src_counter = 0
-
     # Logging
     log_file_name = os.path.join(experiment_log_dir, f"logs_{datetime.now().strftime('%d_%m_%Y_%H_%M_%S')}.log")
     logger = _logger(log_file_name)

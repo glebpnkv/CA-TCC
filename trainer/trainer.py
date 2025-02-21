@@ -234,7 +234,6 @@ def gen_pseudo_labels(
     device,
     experiment_log_dir
 ):
-    from sklearn.metrics import accuracy_score
     model.eval()
     softmax = nn.Softmax(dim=1)
 
@@ -263,6 +262,6 @@ def gen_pseudo_labels(
     data_save = dict()
     data_save["samples"] = all_data
     data_save["labels"] = torch.LongTensor(torch.from_numpy(all_pseudo_labels).long())
-    file_name = f"pseudo_train_data.pt"
+    file_name = "pseudo_train_data.pt"
     torch.save(data_save, os.path.join(experiment_log_dir, file_name))
     print("Pseudo labels generated ...")

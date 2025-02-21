@@ -6,6 +6,7 @@ import sys
 import numpy as np
 import pandas as pd
 import torch
+from shutil import copy
 from sklearn.metrics import classification_report, cohen_kappa_score, confusion_matrix, accuracy_score
 from torch import nn
 
@@ -100,9 +101,6 @@ def _logger(logger_name, level=logging.DEBUG):
     return logger
 
 
-from shutil import copy
-
-
 def copy_files(destination, data_type):
     destination_dir = os.path.join(destination, "model_files")
     os.makedirs(destination_dir, exist_ok=True)
@@ -112,6 +110,6 @@ def copy_files(destination, data_type):
     copy(f"config_files/{data_type}_Configs.py", os.path.join(destination_dir, f"{data_type}_Configs.py"))
     copy("dataloader/augmentations.py", os.path.join(destination_dir, "augmentations.py"))
     copy("dataloader/dataloader.py", os.path.join(destination_dir, "dataloader.py"))
-    copy(f"models/model.py", os.path.join(destination_dir, f"model.py"))
+    copy("models/model.py", os.path.join(destination_dir, "model.py"))
     copy("models/loss.py", os.path.join(destination_dir, "loss.py"))
     copy("models/TC.py", os.path.join(destination_dir, "TC.py"))
